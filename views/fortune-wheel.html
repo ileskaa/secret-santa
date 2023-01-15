@@ -1,0 +1,97 @@
+<div class="defaultBlock">
+    {{}}, vous allez maintenant tirer au sort la personne qui aura la chance de recevoir votre cadeau. Pour cela, il vous suffit de faire tourner la roue ci-dessous.
+    Mais attention, personne d'autre que vous ne devra voir le résultat du tirage.
+</div>
+
+<style type="text/css" id='sectorStyles'></style>
+
+<div class="container">
+    <img id="triangle" src="/static/triangle.png">
+    <div class="wheel">
+        <div class="inner-wheel">
+            {{sectors}}
+        </div>
+    </div>
+</div>
+
+    <button id="wheel-btn" class="button">
+        C'est parti !
+    </button>
+<div id="wrap">
+    <div id="suspense" class="hide">Vous avez tiré...</div>
+    <div id="draftName" class="hide">{{draft}}</div>
+    <div id="canClose" class="hide">Vous pouvez désormais fermer la page, votre tirage a été enregistré.</div>
+</div>
+
+<script src="/static/addStyles.js"></script>
+<script>
+    const multiplier = {integer};
+    let deg
+    if (multiplier < 8){
+        deg = -(multiplier * 45);
+    } else {
+        deg = -(multiplier * 45 + 22.5);
+    }
+    deg = deg - 5400;
+    
+    const startBtn = document.querySelector('#wheel-btn');
+    //Imeddiatly invoked function expression, to not pollute the global scope
+    (function(){
+        const wheel = document.querySelector('.wheel');
+
+        startBtn.addEventListener('click', () => {
+            startBtn.style.pointerEvents = 'none';
+            console.log(deg);
+            wheel.style.transition = 'all 10s ease-out';
+            wheel.style.transform = `rotate(${deg}deg)`;
+            wheel.classList.add('blur');
+            startBtn.style.opacity = 0;
+
+            finalView();
+        });
+    })();
+
+    const arr = Array.from(Array(30).keys());
+    const increasingOpacity = arr.map(function(e) {
+        e = e/30;
+        return e;
+    });
+    const decreasingOpacity = increasingOpacity.slice().reverse();
+
+    const suspense = document.getElementById('suspense');
+    const draftName = document.querySelector('#draftName');
+    const container = document.querySelector('.container');
+    const defaultBlock = document.querySelector('.defaultBlock');
+    const canClose = document.querySelector('#canClose');
+
+    function revealHide(elt, myArr){
+        let x = 0;
+        (function changeOpacity(elt, opacityArr){
+            elt.style.opacity = opacityArr[x];
+            if(++x < opacityArr.length) {
+                setTimeout(changeOpacity, 70, elt, myArr); //time given in milliseconds. Parameter given after milliseconds
+            };
+            if(opacityArr[0]===0){
+                elt.style.display = 'block';
+            }
+        })(elt, myArr);
+    };
+
+    const timer = 12;
+    function finalView(){
+        setTimeout(() => {
+            revealHide(container, decreasingOpacity);
+            revealHide(defaultBlock, decreasingOpacity);
+        }, 1000*timer);
+        setTimeout(() => {
+            //container.style.display = 'none';
+            revealHide(suspense, increasingOpacity);
+        }, 1000*(timer+3));
+        setTimeout(() => {
+            revealHide(draftName, increasingOpacity);
+        }, 1000*(timer+5));
+        setTimeout(() => {
+            revealHide(canClose, increasingOpacity);
+        }, 1000*(timer+7));
+    };
+</script>
